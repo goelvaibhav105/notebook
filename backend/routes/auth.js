@@ -1,43 +1,30 @@
 const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-
-// it is used to send the token basically used for aafter login step 
 var jwt = require('jsonwebtoken');
+var fetchuser = require('../middleware/fetchUser');
 
 const JWT_SECRET = 'vaibSecret@123';
 
-// chk to use validate 
-const { body, validationResult } = require('express-validator');
-
-
-// to Chk 
-
-router.get('/',(req,res)=>{
-  res.send('User Route coming successfully')
-})
-
-
-// Create a User using: POST "/api/auth/createuser". No login required
+// ROUTE 1: Create a User using: POST "/api/auth/createuser". No login required
 router.post('/createuser', [
   body('name', 'Enter a valid name').isLength({ min: 3 }),
   body('email', 'Enter a valid email').isEmail(),
   body('password', 'Password must be atleast 5 characters').isLength({ min: 5 }),
 ], async (req, res) => {
-  //console.log('if yoy want to see what is comming in res',res.body);
   // If there are errors, return Bad request and the errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-  // Check whether the user with this email exists already
   try {
+    // Check whether the user with this email exists already
     let user = await User.findOne({ email: req.body.email });
     if (user) {
       return res.status(400).json({ error: "Sorry a user with this email already exists" })
     }
-    // addingSALt await is nesassary 
     const salt = await bcrypt.genSalt(10);
     const secPass = await bcrypt.hash(req.body.password, salt);
 
@@ -46,35 +33,91 @@ router.post('/createuser', [
       name: req.body.name,
       password: secPass,
       email: req.body.email,
-    })
+    });
     const data = {
-      user:{
+      user: {
         id: user.id
       }
     }
-    // first it is taking our data and 2d is the secret 
-    
     const authtoken = jwt.sign(data, JWT_SECRET);
-    
+
 
     // res.json(user)
-    res.json({authtoken})
-    
+    res.json({ authtoken })
+
   } catch (error) {
     console.error(error.message);
-    res.status(500).send("Some Error occured");
+    res.status(500).send("Internal Server Error");
   }
 })
 
 
-// CHK METHOD and this will also work but see no validation and all are there 
+// ROUTE 2: Authenticate a User using: POST "/api/auth/login". No login required
+router.post('/login', [
+  body('email', 'Enter a valid email').isEmail(),
+  body('password', 'Password cannot be blank').exists(),
+], async (req, res) => {
 
-// router.post('/createUser',(req,res)=>{
-//   const user = User(req.body);
-//   user.save()
-//   res.send(req.body);
-// })
+  // If there are errors, return Bad request and the errors
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { email, password } = req.body;
+  try {
+    let user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ error: "Please try to login with correct credentials" });
+    }
+  
+    const passwordCompare = await bcrypt.compare(password, user.password);
+    if (!passwordCompare) {
+      return res.status(400).json({ error: "Please try to login with correct credentials" });
+    }
+
+    const data = {
+      user: {
+        id: user.id
+      }
+    }
+    const authtoken = jwt.sign(data, JWT_SECRET);
+    res.json({ authtoken })
+
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
 
 
+});
 
+
+// ROUTE 3: Get loggedin User Details using: POST "/api/auth/getuser". Login required
+
+// fetch user is a middleware
+// 3rd argument is captured as next in our middleware 
+router.post('/getuser', fetchuser,  async (req, res) => {
+
+  try {
+    // see ... there details are coming from req.user and we want id so req.user.id
+    const userId = req.user.id;
+
+    // .select(-password) means except password we are finding user 
+    const user = await User.findById(userId).select("-password")
+    res.send(user)
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
+  }
+})
 module.exports = router
+
+
+// ROUTE 1 :  Creating a user and Saving in data base plus returning a jwt token which is handled by jwt using our user id
+
+// ROUTE 2 : Login as a valid user  then returing a jwt token which is having the id embeded which we have fetched from user credtintials
+
+// ROUTE 3 : Getting the user details by the user id which we are going to retreve (user id ) from jwt Token  
+
+ // why middle ware required 
