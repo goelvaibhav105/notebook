@@ -5,6 +5,8 @@ connectToMongo();
 const app = express()
 const port = 5000
 
+
+// middleware to use application/json 
 app.use(express.json())
 require("dotenv").config();
 

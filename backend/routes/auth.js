@@ -1,6 +1,8 @@
 const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
+
+// chk to use validate 
 const { body, validationResult } = require('express-validator');
 
 
@@ -17,6 +19,7 @@ router.post('/createuser', [
   body('email', 'Enter a valid email').isEmail(),
   body('password', 'Password must be atleast 5 characters').isLength({ min: 5 }),
 ], async (req, res) => {
+  //console.log('if yoy want to see what is comming in res',res.body);
   // If there are errors, return Bad request and the errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -41,5 +44,16 @@ router.post('/createuser', [
     res.status(500).send("Some Error occured");
   }
 })
+
+
+// CHK METHOD and this will also work but see no validation and all are there 
+
+// router.post('/createUser',(req,res)=>{
+//   const user = User(req.body);
+//   user.save()
+//   res.send(req.body);
+// })
+
+
 
 module.exports = router
