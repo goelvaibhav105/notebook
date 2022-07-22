@@ -1,6 +1,12 @@
 const express = require('express');
 const User = require('../models/User');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+
+// it is used to send the token basically used for aafter login step 
+var jwt = require('jsonwebtoken');
+
+const JWT_SECRET = 'vaibSecret@123';
 
 // chk to use validate 
 const { body, validationResult } = require('express-validator');
@@ -31,13 +37,28 @@ router.post('/createuser', [
     if (user) {
       return res.status(400).json({ error: "Sorry a user with this email already exists" })
     }
+    // addingSALt await is nesassary 
+    const salt = await bcrypt.genSalt(10);
+    const secPass = await bcrypt.hash(req.body.password, salt);
+
     // Create a new user
     user = await User.create({
       name: req.body.name,
-      password: req.body.password,
+      password: secPass,
       email: req.body.email,
     })
-    res.json(user)
+    const data = {
+      user:{
+        id: user.id
+      }
+    }
+    // first it is taking our data and 2d is the secret 
+    
+    const authtoken = jwt.sign(data, JWT_SECRET);
+    
+
+    // res.json(user)
+    res.json({authtoken})
     
   } catch (error) {
     console.error(error.message);
