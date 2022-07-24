@@ -4,7 +4,7 @@ const router = express.Router();
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
-var fetchuser = require('../middleware/fetchUser');
+var fetchuser = require('../middleware/fetchuser');
 
 const JWT_SECRET = 'vaibSecret@123';
 
@@ -57,7 +57,7 @@ router.post('/login', [
   body('email', 'Enter a valid email').isEmail(),
   body('password', 'Password cannot be blank').exists(),
 ], async (req, res) => {
-
+  let success = false;
   // If there are errors, return Bad request and the errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -68,12 +68,14 @@ router.post('/login', [
   try {
     let user = await User.findOne({ email });
     if (!user) {
+      success = false
       return res.status(400).json({ error: "Please try to login with correct credentials" });
     }
-  
+
     const passwordCompare = await bcrypt.compare(password, user.password);
     if (!passwordCompare) {
-      return res.status(400).json({ error: "Please try to login with correct credentials" });
+      success = false
+      return res.status(400).json({ success, error: "Please try to login with correct credentials" });
     }
 
     const data = {
@@ -82,7 +84,8 @@ router.post('/login', [
       }
     }
     const authtoken = jwt.sign(data, JWT_SECRET);
-    res.json({ authtoken })
+    success = true;
+    res.json({ success, authtoken })
 
   } catch (error) {
     console.error(error.message);
@@ -94,16 +97,10 @@ router.post('/login', [
 
 
 // ROUTE 3: Get loggedin User Details using: POST "/api/auth/getuser". Login required
-
-// fetch user is a middleware
-// 3rd argument is captured as next in our middleware 
 router.post('/getuser', fetchuser,  async (req, res) => {
 
   try {
-    // see ... there details are coming from req.user and we want id so req.user.id
-    const userId = req.user.id;
-
-    // .select(-password) means except password we are finding user 
+    userId = req.user.id;
     const user = await User.findById(userId).select("-password")
     res.send(user)
   } catch (error) {
@@ -112,12 +109,3 @@ router.post('/getuser', fetchuser,  async (req, res) => {
   }
 })
 module.exports = router
-
-
-// ROUTE 1 :  Creating a user and Saving in data base plus returning a jwt token which is handled by jwt using our user id
-
-// ROUTE 2 : Login as a valid user  then returing a jwt token which is having the id embeded which we have fetched from user credtintials
-
-// ROUTE 3 : Getting the user details by the user id which we are going to retreve (user id ) from jwt Token  
-
- // why middle ware required 
