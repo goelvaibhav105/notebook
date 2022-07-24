@@ -23,8 +23,6 @@ const NoteState = (props) => {
 
   // Add a Note
   const addNote = async (title, description, tag) => {
-    // TODO: API Call
-    // API Call 
     const response = await fetch(`${host}/api/notes/addnote`, {
       method: 'POST',
       headers: {
@@ -37,8 +35,8 @@ const NoteState = (props) => {
 
     console.log("Adding a new note")
     const note = {
-      "_id": "61322f119553781a8ca8d0e08",
-      "user": "6131dc5e3e4037cd4734a0664",
+      "_id": "62da7aedd57941d4793e0827",
+      "user": "62da707dff583fa57fe13966",
       "title": title,
       "description": description,
       "tag": tag,
