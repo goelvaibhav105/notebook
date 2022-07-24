@@ -23,6 +23,8 @@ const NoteState = (props) => {
 
   // Add a Note
   const addNote = async (title, description, tag) => {
+    // TODO: API Call
+    // API Call 
     const response = await fetch(`${host}/api/notes/addnote`, {
       method: 'POST',
       headers: {
@@ -31,12 +33,15 @@ const NoteState = (props) => {
       },
       body: JSON.stringify({title, description, tag})
     });
+
+    const json = await response.json();
+    console.log(json)
      
 
     console.log("Adding a new note")
     const note = {
-      "_id": "62da7aedd57941d4793e0827",
-      "user": "62da707dff583fa57fe13966",
+      "_id": "61322f119553781a8ca8d0e08",
+      "user": "6131dc5e3e4037cd4734a0664",
       "title": title,
       "description": description,
       "tag": tag,
@@ -68,25 +73,28 @@ const NoteState = (props) => {
   const editNote = async (id, title, description, tag) => {
     // API Call 
     const response = await fetch(`${host}/api/notes/updatenote/${id}`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         "auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNjJkYTcwN2RmZjU4M2ZhNTdmZTEzOTY2In0sImlhdCI6MTY1ODY1NDQ5Mn0.yeWf0RPccH7F5qRdsNPqXB63cRiOSPTiF-AwnsVlEDY"
       },
       body: JSON.stringify({title, description, tag})
     });
-    const json = response.json();
+    const json = await response.json();
+    console.log(json)
 
-    // Logic to edit in client
-    for (let index = 0; index < notes.length; index++) {
-      const element = notes[index];
+     let newNotes = JSON.parse(JSON.stringify(notes))
+    // Logic to edit in client (if we have not done this then it will not update on frontend )
+    for (let index = 0; index < newNotes.length; index++) {
+      const element = newNotes[index];
       if (element._id === id) {
-        element.title = title;
-        element.description = description;
-        element.tag = tag;
+        newNotes[index].title = title;
+        newNotes[index].description = description;
+        newNotes[index].tag = tag; 
+        break; 
       }
-
-    }
+    }  
+    setNotes(newNotes);
   }
 
   return (
