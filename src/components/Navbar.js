@@ -1,4 +1,4 @@
-import React from 'react'
+import React,{useEffect} from 'react'
 import { Link, useLocation } from "react-router-dom";
 
   
@@ -22,10 +22,12 @@ const Navbar = () => {
                         </li>
 
                     </ul>
-                    <form className="d-flex"> 
+                  {!localStorage.getItem('token') ?  <form className="d-flex"> 
                     <Link className="btn btn-primary mx-1" to="/login" role="button">Login</Link>
                     <Link className="btn btn-primary mx-1" to="/signup" role="button">Signup</Link>
-                    </form>
+                    </form> : <form className="d-flex"> 
+                    <Link className="btn btn-primary mx-1" to="/login" onClick={()=>{localStorage.removeItem('token')}} role="button">Logout</Link>
+                    </form> }
                 </div>
             </div>
         </nav>
