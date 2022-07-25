@@ -21,10 +21,11 @@ const Login = (props) => {
             // Save the auth token and redirect
             localStorage.setItem('token', json.authtoken); 
             history.push("/");
+            props.showAlert("You are now logged in","success")
 
         }
         else{
-            alert("Invalid credentials");
+            props.showAlert("Invalid Credentials ","danger")
         }
     }
 
