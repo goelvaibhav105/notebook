@@ -38,11 +38,11 @@ const Signup = (props) => {
               <form  onSubmit={handleSubmit}>
               <div className="mb-3">
                     <label htmlFor="name" className="form-label">Name</label>
-                    <input type="name" className="form-control" value={credentials.name} onChange={onChange} id="name" name="name"  />
+                    <input type="name" className="form-control" value={credentials.name} required onChange={onChange} id="name" name="name"  />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label">Email address</label>
-                    <input type="email" className="form-control" value={credentials.email} onChange={onChange} id="email" name="email" aria-describedby="emailHelp" />
+                    <input type="email" className="form-control" value={credentials.email} required onChange={onChange} id="email" name="email" aria-describedby="emailHelp" />
                     <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
                 </div>
                 <div className="mb-3">
