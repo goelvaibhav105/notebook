@@ -1,8 +1,8 @@
-const connectToMongo = require('./db');
+
 const express = require('express')
+const mongoose = require('mongoose');
 var cors = require('cors') 
 
-connectToMongo();
 const app = express()
 const port = 5000
 
@@ -22,6 +22,18 @@ app.use('/api/notes', require('./routes/notes'))
 //   res.send('Hello Vaibhav !')
 // })
 
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }).then(() => {
+    console.log("DB Connetion Successfull");
+  })
+  .catch((err) => {
+    console.log(err.message);
+  });
+
+  
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
